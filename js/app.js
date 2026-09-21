@@ -89,6 +89,12 @@ const resumenDocumentos = document.getElementById("documentSummary");
 const botonesFiltro = document.querySelectorAll(".filter-btn");
 const mensajeVacio = document.getElementById("emptyMessage");
 
+const modalDocumento = document.getElementById("pdfModal");
+const tituloModalDocumento = document.getElementById("pdfModalTitle");
+const iframeDocumento = document.querySelector(".pdf-modal-body iframe");
+const botonCerrarModal = document.querySelector(".pdf-modal-close");
+let botonOrigenModal = null;
+
 // --------------------------------------------------------------------------
 // Bloqueo por PIN
 // --------------------------------------------------------------------------
@@ -182,7 +188,7 @@ function crearTarjeta(documento) {
         : `<span class="badge badge-pending"><span class="badge-dot"></span>Pendiente</span>`;
 
     const accionHtml = disponible
-        ? `<a class="btn-view" href="${documento.archivo}" target="_blank" rel="noopener">Ver documento</a>`
+        ? `<button type="button" class="btn-view" data-open="${documento.id}">Ver documento</button>`
         : `<p class="pending-text">Documento pendiente</p>`;
 
     item.innerHTML = `
@@ -258,8 +264,48 @@ function actualizarIndicadores() {
 }
 
 // --------------------------------------------------------------------------
+// Modal de documentos
+// --------------------------------------------------------------------------
+
+function abrirModalDocumento(documento, boton) {
+    botonOrigenModal = boton;
+    tituloModalDocumento.textContent = documento.nombre;
+    iframeDocumento.src = documento.archivo;
+    modalDocumento.classList.add("open");
+    modalDocumento.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    botonCerrarModal.focus();
+}
+
+function cerrarModalDocumento() {
+    modalDocumento.classList.remove("open");
+    modalDocumento.setAttribute("aria-hidden", "true");
+    iframeDocumento.src = "";
+    document.body.style.overflow = "";
+    if (botonOrigenModal) botonOrigenModal.focus();
+}
+
+// --------------------------------------------------------------------------
 // Eventos
 // --------------------------------------------------------------------------
+
+document.addEventListener("click", (event) => {
+    const botonAbrir = event.target.closest("[data-open]");
+    if (botonAbrir) {
+        const documento = documentos.find((doc) => doc.id === botonAbrir.dataset.open);
+        if (documento) abrirModalDocumento(documento, botonAbrir);
+        return;
+    }
+    if (event.target.matches("[data-close-modal]")) {
+        cerrarModalDocumento();
+    }
+});
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modalDocumento.classList.contains("open")) {
+        cerrarModalDocumento();
+    }
+});
 
 botonesFiltro.forEach((boton) => {
     boton.addEventListener("click", () => {
