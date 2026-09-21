@@ -1,6 +1,3 @@
-# Documentos personales (privados): no subir al repositorio
-assets/*.pdf
-
 # Configuración de PIN generada en el despliegue (secreta)
 js/pin-config.js
 
