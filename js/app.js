@@ -94,7 +94,7 @@ const mensajeVacio = document.getElementById("emptyMessage");
 // --------------------------------------------------------------------------
 
 // PIN por defecto. Cámbialo aquí si deseas uno distinto.
-const PIN_DEFECTO = "0000";
+const PIN_DEFECTO = "4826";
 
 const pantallaPin = document.getElementById("pinScreen");
 const cajasPin = document.querySelectorAll(".pin-box");
