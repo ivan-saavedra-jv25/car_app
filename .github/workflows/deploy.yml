@@ -23,7 +23,7 @@ jobs:
 
       - name: Generar configuracion del PIN desde el secreto
         env:
-          PIN: ${{ secrets.PIN }}
+          PIN: ${{ secrets.PASS_CODE }}
         run: printf 'window.PIN_ACCESO = "%s";\n' "$PIN" > js/pin-config.js
 
       - uses: actions/configure-pages@v5

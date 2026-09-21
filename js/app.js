@@ -94,7 +94,7 @@ const mensajeVacio = document.getElementById("emptyMessage");
 // --------------------------------------------------------------------------
 
 // PIN de acceso. Se inyecta en el despliegue desde el secreto de entorno
-// "PIN" mediante el workflow de GitHub Actions (js/pin-config.js).
+// "PASS_CODE" mediante el workflow de GitHub Actions (js/pin-config.js).
 // Si no está presente, el acceso permanece bloqueado.
 const PIN_DEFECTO = window.PIN_ACCESO || "";
 
