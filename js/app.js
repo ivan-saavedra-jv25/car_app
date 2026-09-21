@@ -93,8 +93,10 @@ const mensajeVacio = document.getElementById("emptyMessage");
 // Bloqueo por PIN
 // --------------------------------------------------------------------------
 
-// PIN por defecto. Cámbialo aquí si deseas uno distinto.
-const PIN_DEFECTO = "4826";
+// PIN de acceso. Se inyecta en el despliegue desde el secreto de entorno
+// "PIN" mediante el workflow de GitHub Actions (js/pin-config.js).
+// Si no está presente, el acceso permanece bloqueado.
+const PIN_DEFECTO = window.PIN_ACCESO || "";
 
 const pantallaPin = document.getElementById("pinScreen");
 const cajasPin = document.querySelectorAll(".pin-box");
