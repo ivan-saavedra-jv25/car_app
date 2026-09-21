@@ -1,0 +1,13 @@
+# Documentos personales (privados): no subir al repositorio
+assets/*.pdf
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Logs
+*.log

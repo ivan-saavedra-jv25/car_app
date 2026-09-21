@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentación del Conductor y Vehículo</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <h1>Documentos del Conductor y Vehículo</h1>
+       
+
+        <p class="header-summary" id="documentSummary" aria-live="polite"></p>
+    </header>
+
+    <main class="main">
+        <section class="controls">
+            <nav class="filters" aria-label="Filtrar por categoría">
+                <button type="button" class="filter-btn active" data-filter="todos">Todos</button>
+                <button type="button" class="filter-btn" data-filter="Vehículo">Vehículo</button>
+            </nav>
+        </section>
+
+        <section class="doc-section" hidden>
+            <h2>Documentos del conductor</h2>
+            <div class="cards-grid" id="section-Conductor"></div>
+        </section>
+
+        <section class="doc-section">
+            <h2>Documentos del vehículo</h2>
+            <div class="cards-grid" id="section-Vehículo"></div>
+        </section>
+
+        <p id="emptyMessage" class="empty-message" hidden>No se encontraron documentos que coincidan con tu búsqueda.</p>
+    </main>
+
+    <footer class="footer">
+        <p>Documentación del conductor y vehículo</p>
+        <p>Información de referencia para Chile</p>
+    </footer>
+
+    <section class="pin-screen" id="pinScreen" aria-label="Acceso protegido con PIN">
+        <div class="pin-card">
+            <span class="pin-icon" aria-hidden="true">&#128274;</span>
+            <h2>Acceso protegido</h2>
+            <p class="pin-subtitle">Ingresa el PIN de 4 dígitos para ver los documentos.</p>
+
+            <div class="pin-boxes">
+                <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" pattern="[0-9]*" autocomplete="off" aria-label="Dígito 1 del PIN">
+                <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" pattern="[0-9]*" autocomplete="off" aria-label="Dígito 2 del PIN">
+                <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" pattern="[0-9]*" autocomplete="off" aria-label="Dígito 3 del PIN">
+                <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" pattern="[0-9]*" autocomplete="off" aria-label="Dígito 4 del PIN">
+            </div>
+
+            <p class="pin-error" id="pinError" aria-live="polite">PIN incorrecto. Intenta nuevamente.</p>
+            <button type="button" class="pin-clear" id="pinClear">Borrar</button>
+        </div>
+    </section>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
