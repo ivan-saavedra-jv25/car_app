@@ -153,7 +153,10 @@ function verificarPin() {
     } else {
         errorPin.classList.add("visible");
         pantallaPin.classList.add("shake");
-        setTimeout(limpiarPin, 500);
+        setTimeout(() => {
+            limpiarPin();
+            cajasPin[0].focus();
+        }, 500);
     }
 }
 
