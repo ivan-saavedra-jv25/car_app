@@ -1,4 +1,4 @@
-yaml
+```yaml
 name: Deploy to GitHub Pages
 
 on:
@@ -23,73 +23,169 @@ jobs:
       name: pass_code
 
     steps:
+
       # ==========================================
       # 1. Descargar el repositorio
       # ==========================================
       - name: Checkout
         uses: actions/checkout@v4
 
+
       # ==========================================
-      # 2. Generar configuracion del PIN
+      # 2. Generar / sobrescribir configuracion PIN
       # ==========================================
       - name: Generar configuracion del PIN
         env:
           PIN: ${{ secrets.PASS_CODE }}
         run: |
+          echo "========================================="
+          echo "Generando configuracion del PIN"
+          echo "========================================="
+
+          # Validar que el secreto exista
           if [ -z "$PIN" ]; then
             echo "ERROR: PASS_CODE no está configurado"
             exit 1
           fi
 
-          # Asegurar que exista la carpeta
+          # Asegurar que exista la carpeta js
           mkdir -p js
 
-          # Sobrescribir el archivo con el PIN
-          printf 'window.PIN_ACCESO = "%s";\n' "$PIN" > js/pin-config.js
-
-          # Verificar que el archivo exista
-          if [ ! -f "js/pin-config.js" ]; then
-            echo "ERROR: No se pudo crear js/pin-config.js"
-            exit 1
-          fi
-
-          echo "Archivo js/pin-config.js generado correctamente"
-
-      # ==========================================
-      # 3. Verificar estructura antes del deploy
-      # ==========================================
-      - name: Verificar archivos
-        run: |
-          echo "=== Estructura del proyecto ==="
-          find . -maxdepth 3 -type f | sort
-
+          # Mostrar estado anterior del archivo
           echo ""
-          echo "=== Verificando pin-config.js ==="
+          echo "Estado anterior del archivo:"
 
           if [ -f "js/pin-config.js" ]; then
-            echo "OK: js/pin-config.js existe"
+            echo "El archivo existe."
+
+            FILE_SIZE=$(wc -c < js/pin-config.js)
+
+            echo "Tamaño anterior: ${FILE_SIZE} bytes"
           else
-            echo "ERROR: js/pin-config.js NO existe"
+            echo "El archivo no existía."
+          fi
+
+          # ==========================================
+          # Sobrescribir el archivo
+          # ==========================================
+          printf 'window.PIN_ACCESO = "%s";\n' "$PIN" > js/pin-config.js
+
+          echo ""
+          echo "Archivo sobrescrito."
+
+
+      # ==========================================
+      # 3. Validar que el archivo fue sobrescrito
+      # ==========================================
+      - name: Validar pin-config.js
+        env:
+          PIN: ${{ secrets.PASS_CODE }}
+        run: |
+          echo "========================================="
+          echo "Validando pin-config.js"
+          echo "========================================="
+
+          # ------------------------------------------
+          # Validar existencia
+          # ------------------------------------------
+          if [ ! -f "js/pin-config.js" ]; then
+            echo "ERROR: js/pin-config.js no existe"
             exit 1
           fi
 
+          echo "OK: El archivo existe."
+
+
+          # ------------------------------------------
+          # Validar que no esté vacío
+          # ------------------------------------------
+          if [ ! -s "js/pin-config.js" ]; then
+            echo "ERROR: js/pin-config.js está vacío"
+            exit 1
+          fi
+
+          echo "OK: El archivo no está vacío."
+
+
+          # ------------------------------------------
+          # Validar estructura
+          # ------------------------------------------
+          if ! grep -q '^window\.PIN_ACCESO = ' js/pin-config.js; then
+            echo "ERROR: El archivo no contiene window.PIN_ACCESO"
+            exit 1
+          fi
+
+          echo "OK: La variable window.PIN_ACCESO existe."
+
+
+          # ------------------------------------------
+          # Validar que el contenido corresponde
+          # al secreto configurado
+          # ------------------------------------------
+          if ! grep -Fq "$PIN" js/pin-config.js; then
+            echo "ERROR: El contenido del archivo no coincide con PASS_CODE"
+            exit 1
+          fi
+
+          echo "OK: El contenido coincide con PASS_CODE."
+
+
+          # ------------------------------------------
+          # Mostrar solamente información segura
+          # ------------------------------------------
+          FILE_SIZE=$(wc -c < js/pin-config.js)
+
+          echo ""
+          echo "========================================="
+          echo "VALIDACION EXITOSA"
+          echo "========================================="
+          echo "Archivo: js/pin-config.js"
+          echo "Tamaño: ${FILE_SIZE} bytes"
+          echo "Estado: SOBRESCRITO CORRECTAMENTE"
+          echo "PIN: oculto"
+          echo "========================================="
+
+
       # ==========================================
-      # 4. Configurar GitHub Pages
+      # 4. Verificar estructura del proyecto
+      # ==========================================
+      - name: Verificar estructura del proyecto
+        run: |
+          echo "========================================="
+          echo "Estructura del proyecto"
+          echo "========================================="
+
+          find . -maxdepth 3 -type f \
+            ! -path './.git/*' \
+            | sort
+
+          echo ""
+          echo "Verificando archivo PIN..."
+
+          test -f js/pin-config.js
+
+          echo "OK: js/pin-config.js está presente."
+
+
+      # ==========================================
+      # 5. Configurar GitHub Pages
       # ==========================================
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+
       # ==========================================
-      # 5. Crear artifact para GitHub Pages
+      # 6. Crear artifact para GitHub Pages
       # ==========================================
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
 
+
       # ==========================================
-      # 6. Publicar en GitHub Pages
+      # 7. Deploy a GitHub Pages
       # ==========================================
       - name: Deploy
         uses: actions/deploy-pages@v4
-
+```
