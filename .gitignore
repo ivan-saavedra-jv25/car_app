@@ -1,5 +1,5 @@
-# Configuración de PIN generada en el despliegue (secreta)
-js/pin-config.js
+# Configuración de entornos generada en el despliegue (secreta)
+js/environments.js
 
 # Sistema
 .DS_Store

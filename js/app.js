@@ -9,9 +9,9 @@
 //    - nombre:     nombre visible del documento.
 //    - descripcion:descripción breve mostrada en la tarjeta.
 //    - categoria:  "Conductor" o "Vehículo" (agrupa las secciones).
-//    - archivo:    ruta relativa al PDF dentro de assets/.
+//    - archivo:    ruta relativa en assets/ o URL de Google Drive del PDF.
 //    - tipo:       formato del archivo (por ejemplo "PDF").
-// 2. Coloca el archivo real en la carpeta assets/.
+// 2. Coloca el archivo real en la carpeta assets/ o comparte el PDF en Google Drive.
 // No es necesario modificar el HTML ni la lógica de la aplicación.
 // ==========================================================================
 
@@ -37,7 +37,7 @@ const documentos = [
         nombre: "Permiso de circulación",
         descripcion: "Permiso de circulación correspondiente al período vigente.",
         categoria: "Vehículo",
-        archivo: "assets/permiso-circulacion.pdf",
+        archivo: "https://drive.google.com/file/d/1nAx3P4lUvqplWTHV7mUYCZuIELuIQ1hQ/view?usp=drive_web",
         tipo: "PDF"
     },
     {
@@ -45,7 +45,7 @@ const documentos = [
         nombre: "Certificado de revisión técnica u homologación",
         descripcion: "Certificado de revisión técnica u homologación vigente.",
         categoria: "Vehículo",
-        archivo: "assets/revision-tecnica.pdf",
+        archivo: "https://drive.google.com/file/d/1WiFKYU-412sqIuN31a9qSxxtCuHgl5WK/view?usp=drive_web",
         tipo: "PDF"
     },
     {
@@ -53,7 +53,7 @@ const documentos = [
         nombre: "SOAP",
         descripcion: "Seguro Obligatorio de Accidentes Personales vigente.",
         categoria: "Vehículo",
-        archivo: "assets/soap.pdf",
+        archivo: "https://drive.google.com/file/d/10CZAhx6iVDuLJwg593-doXa_jlbNIqwg/view?usp=drive_web",
         tipo: "PDF"
     },
     {
@@ -61,7 +61,7 @@ const documentos = [
         nombre: "Padrón / certificado de inscripción",
         descripcion: "Certificado que acredita la inscripción del vehículo en el Registro Civil.",
         categoria: "Vehículo",
-        archivo: "assets/padron.pdf",
+        archivo: "https://drive.google.com/file/d/1k8nCz_uceJSK1ytSQhIEDpm_0oUeg2Yt/view?usp=drive_web",
         tipo: "PDF"
     }
 ];
@@ -99,8 +99,9 @@ let botonOrigenModal = null;
 // Bloqueo por PIN
 // --------------------------------------------------------------------------
 
-// PIN de acceso. Se inyecta en el despliegue desde el secreto de entorno
-// "PASS_CODE" mediante el workflow de GitHub Actions (js/pin-config.js).
+// PIN de acceso. Se inyecta en el despliegue desde el secreto "PASS_CODE"
+// del environment "pass_code" mediante el workflow de GitHub Actions
+// (js/environments.js). En local se usa js/environments.js con datos propios.
 // Si no está presente, el acceso permanece bloqueado.
 const PIN_DEFECTO = window.PIN_ACCESO || "";
 
@@ -108,6 +109,8 @@ const pantallaPin = document.getElementById("pinScreen");
 const cajasPin = document.querySelectorAll(".pin-box");
 const errorPin = document.getElementById("pinError");
 const botonBorrarPin = document.getElementById("pinClear");
+const nombreApp = document.getElementById("appName");
+const botonCerrarSesion = document.getElementById("logoutBtn");
 
 // Registra la entrada de los campos y verifica al completar los 4 dígitos.
 document.querySelectorAll(".pin-box").forEach((caja, index) => {
@@ -171,6 +174,21 @@ function desbloquear() {
     cargarEstadoDocumentos();
 }
 
+// Vuelve a la pantalla de PIN, limpiando el PIN y el contenido mostrado.
+function bloquear() {
+    if (modalDocumento.classList.contains("open")) cerrarModalDocumento();
+    limpiarPin();
+    pantallaPin.classList.remove("hidden");
+    for (const contenedor of Object.values(contenedores)) {
+        contenedor.textContent = "";
+    }
+    mensajeVacio.hidden = true;
+    resumenDocumentos.textContent = "";
+    cajasPin[0].focus();
+}
+
+botonCerrarSesion.addEventListener("click", bloquear);
+
 // --------------------------------------------------------------------------
 // Tarjetas
 // --------------------------------------------------------------------------
@@ -232,10 +250,26 @@ function coincideConFiltros(documento) {
 // Estado de los documentos
 // --------------------------------------------------------------------------
 
+// Convierte una URL de Google Drive en su versión embebible en el iframe.
+// Para archivos locales, devuelve la ruta sin cambios.
+function urlVistaDocumento(documento) {
+    const coincidencia = documento.archivo.match(/drive\.google\.com\/file\/d\/([^/?]+)/);
+    if (coincidencia) {
+        return `https://drive.google.com/file/d/${coincidencia[1]}/preview`;
+    }
+    return documento.archivo;
+}
+
 // Comprueba si el archivo de un documento existe mediante una petición HEAD.
+// Google Drive no permite este tipo de petición (CORS), por lo que estos
+// documentos se consideran disponibles directamente.
 // Si la petición falla (archivo ausente, servidor local sin permisos, etc.)
 // el documento se considera "pendiente" sin romper la aplicación.
 async function verificarDocumento(documento) {
+    if (documento.archivo.includes("drive.google.com")) {
+        estadoDocumentos[documento.id] = "disponible";
+        return;
+    }
     try {
         const respuesta = await fetch(documento.archivo, { method: "HEAD" });
         estadoDocumentos[documento.id] = respuesta.ok ? "disponible" : "pendiente";
@@ -270,7 +304,7 @@ function actualizarIndicadores() {
 function abrirModalDocumento(documento, boton) {
     botonOrigenModal = boton;
     tituloModalDocumento.textContent = documento.nombre;
-    iframeDocumento.src = documento.archivo;
+    iframeDocumento.src = urlVistaDocumento(documento);
     modalDocumento.classList.add("open");
     modalDocumento.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
@@ -322,5 +356,6 @@ botonesFiltro.forEach((boton) => {
 
 document.addEventListener("DOMContentLoaded", () => {
     // El contenido se carga al desbloquear con el PIN.
+    if (nombreApp) nombreApp.textContent = window.APP_NAME || "";
     cajasPin[0].focus();
 });

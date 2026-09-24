@@ -1,4 +1,3 @@
-yaml
 name: Deploy to GitHub Pages
 
 on:
@@ -32,19 +31,26 @@ jobs:
 
 
       # ==========================================
-      # 2. Generar / sobrescribir configuracion PIN
+      # 2. Generar / sobrescribir configuracion de entornos
       # ==========================================
-      - name: Generar configuracion del PIN
+      - name: Generar configuracion de entornos
         env:
           PIN: ${{ secrets.PASS_CODE }}
+          APP_NAME: ${{ vars.APP_NAME }}
         run: |
           echo "========================================="
-          echo "Generando configuracion del PIN"
+          echo "Generando configuración de entornos"
           echo "========================================="
 
           # Validar que el secreto exista
           if [ -z "$PIN" ]; then
             echo "ERROR: PASS_CODE no está configurado"
+            exit 1
+          fi
+
+          # Validar que la variable exista
+          if [ -z "$APP_NAME" ]; then
+            echo "ERROR: APP_NAME no está configurado"
             exit 1
           fi
 
@@ -55,10 +61,10 @@ jobs:
           echo ""
           echo "Estado anterior del archivo:"
 
-          if [ -f "js/pin-config.js" ]; then
+          if [ -f "js/environments.js" ]; then
             echo "El archivo existe."
 
-            FILE_SIZE=$(wc -c < js/pin-config.js)
+            FILE_SIZE=$(wc -c < js/environments.js)
 
             echo "Tamaño anterior: ${FILE_SIZE} bytes"
           else
@@ -68,7 +74,7 @@ jobs:
           # ==========================================
           # Sobrescribir el archivo
           # ==========================================
-          printf 'window.PIN_ACCESO = "%s";\n' "$PIN" > js/pin-config.js
+          printf 'window.PIN_ACCESO = "%s";\nwindow.APP_NAME = "%s";\n' "$PIN" "$APP_NAME" > js/environments.js
 
           echo ""
           echo "Archivo sobrescrito."
@@ -77,19 +83,20 @@ jobs:
       # ==========================================
       # 3. Validar que el archivo fue sobrescrito
       # ==========================================
-      - name: Validar pin-config.js
+      - name: Validar environments.js
         env:
           PIN: ${{ secrets.PASS_CODE }}
+          APP_NAME: ${{ vars.APP_NAME }}
         run: |
           echo "========================================="
-          echo "Validando pin-config.js"
+          echo "Validando environments.js"
           echo "========================================="
 
           # ------------------------------------------
           # Validar existencia
           # ------------------------------------------
-          if [ ! -f "js/pin-config.js" ]; then
-            echo "ERROR: js/pin-config.js no existe"
+          if [ ! -f "js/environments.js" ]; then
+            echo "ERROR: js/environments.js no existe"
             exit 1
           fi
 
@@ -99,8 +106,8 @@ jobs:
           # ------------------------------------------
           # Validar que no esté vacío
           # ------------------------------------------
-          if [ ! -s "js/pin-config.js" ]; then
-            echo "ERROR: js/pin-config.js está vacío"
+          if [ ! -s "js/environments.js" ]; then
+            echo "ERROR: js/environments.js está vacío"
             exit 1
           fi
 
@@ -110,39 +117,54 @@ jobs:
           # ------------------------------------------
           # Validar estructura
           # ------------------------------------------
-          if ! grep -q '^window\.PIN_ACCESO = ' js/pin-config.js; then
+          if ! grep -q '^window\.PIN_ACCESO = ' js/environments.js; then
             echo "ERROR: El archivo no contiene window.PIN_ACCESO"
             exit 1
           fi
 
           echo "OK: La variable window.PIN_ACCESO existe."
 
+          if ! grep -q '^window\.APP_NAME = ' js/environments.js; then
+            echo "ERROR: El archivo no contiene window.APP_NAME"
+            exit 1
+          fi
+
+          echo "OK: La variable window.APP_NAME existe."
+
 
           # ------------------------------------------
           # Validar que el contenido corresponde
-          # al secreto configurado
+          # al secreto y variable configurados
           # ------------------------------------------
-          if ! grep -Fq "$PIN" js/pin-config.js; then
+          if ! grep -Fq "$PIN" js/environments.js; then
             echo "ERROR: El contenido del archivo no coincide con PASS_CODE"
             exit 1
           fi
 
           echo "OK: El contenido coincide con PASS_CODE."
 
+          if ! grep -Fq "$APP_NAME" js/environments.js; then
+            echo "ERROR: El contenido del archivo no coincide con APP_NAME"
+            exit 1
+          fi
+
+          echo "OK: El contenido coincide con APP_NAME."
+
 
           # ------------------------------------------
           # Mostrar solamente información segura
           # ------------------------------------------
-          FILE_SIZE=$(wc -c < js/pin-config.js)
+          FILE_SIZE=$(wc -c < js/environments.js)
 
           echo ""
           echo "========================================="
           echo "VALIDACION EXITOSA"
           echo "========================================="
-          echo "Archivo: js/pin-config.js"
+          echo "Archivo: js/environments.js"
           echo "Tamaño: ${FILE_SIZE} bytes"
           echo "Estado: SOBRESCRITO CORRECTAMENTE"
           echo "PIN: oculto"
+          echo "APP_NAME: oculto"
           echo "========================================="
 
 
@@ -160,11 +182,11 @@ jobs:
             | sort
 
           echo ""
-          echo "Verificando archivo PIN..."
+          echo "Verificando archivo de entornos..."
 
-          test -f js/pin-config.js
+          test -f js/environments.js
 
-          echo "OK: js/pin-config.js está presente."
+          echo "OK: js/environments.js está presente."
 
 
       # ==========================================

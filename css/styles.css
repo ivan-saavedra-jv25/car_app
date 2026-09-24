@@ -81,6 +81,24 @@ body {
     color: rgba(255, 255, 255, 0.75);
 }
 
+.btn-logout {
+    margin-top: 1rem;
+    padding: 0.45rem 1.1rem;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--blanco);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background var(--transicion);
+}
+
+.btn-logout:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
 .indicators {
     display: flex;
     flex-wrap: wrap;
@@ -433,6 +451,14 @@ body {
     border-color: var(--azul-primario);
     background: var(--azul-suave);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.pin-app-name {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--azul-primario);
 }
 
 .pin-error {
