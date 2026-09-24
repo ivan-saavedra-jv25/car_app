@@ -29,12 +29,13 @@ jobs:
         env:
           PIN: ${{ secrets.PASS_CODE }}
         run: |
-          printf 'window.PIN_ACCESO = "%s";\n' "$PIN" > js/pin-config.js
+          if [ -z "$PIN" ]; then
+            echo "ERROR: PASS_CODE no está configurado"
+            exit 1
+          fi
 
-      - name: Verificar que la configuracion fue generada
-        run: |
-          test -s js/pin-config.js
-          grep -q "window.PIN_ACCESO" js/pin-config.js
+          mkdir -p js
+          printf 'window.PIN_ACCESO = "%s";\n' "$PIN" > js/pin-config.js
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
