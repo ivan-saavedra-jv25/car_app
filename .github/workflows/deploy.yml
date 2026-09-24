@@ -17,17 +17,32 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: pass_code
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Generar configuracion del PIN desde el secreto
+    environment:
+      name: pass_code
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generar configuracion del PIN
         env:
           PIN: ${{ secrets.PASS_CODE }}
-        run: printf 'window.PIN_ACCESO = "%s";\n' "$PIN" > js/pin-config.js
+        run: |
+          printf 'window.PIN_ACCESO = "%s";\n' "$PIN" > js/pin-config.js
 
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - name: Verificar que la configuracion fue generada
+        run: |
+          test -s js/pin-config.js
+          grep -q "window.PIN_ACCESO" js/pin-config.js
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: .
-      - uses: actions/deploy-pages@v4
+
+      - name: Deploy
+        uses: actions/deploy-pages@v4
