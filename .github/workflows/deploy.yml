@@ -1,3 +1,4 @@
+```yaml
 name: Deploy to GitHub Pages
 
 on:
@@ -22,9 +23,15 @@ jobs:
       name: pass_code
 
     steps:
+      # ==========================================
+      # 1. Descargar el repositorio
+      # ==========================================
       - name: Checkout
         uses: actions/checkout@v4
 
+      # ==========================================
+      # 2. Generar configuracion del PIN
+      # ==========================================
       - name: Generar configuracion del PIN
         env:
           PIN: ${{ secrets.PASS_CODE }}
@@ -34,21 +41,55 @@ jobs:
             exit 1
           fi
 
+          # Asegurar que exista la carpeta
           mkdir -p js
 
+          # Sobrescribir el archivo con el PIN
           printf 'window.PIN_ACCESO = "%s";\n' "$PIN" > js/pin-config.js
 
-          echo "=== Verificando archivo generado ==="
-          ls -la js/
-          test -f js/pin-config.js || exit 1
+          # Verificar que el archivo exista
+          if [ ! -f "js/pin-config.js" ]; then
+            echo "ERROR: No se pudo crear js/pin-config.js"
+            exit 1
+          fi
 
+          echo "Archivo js/pin-config.js generado correctamente"
+
+      # ==========================================
+      # 3. Verificar estructura antes del deploy
+      # ==========================================
+      - name: Verificar archivos
+        run: |
+          echo "=== Estructura del proyecto ==="
+          find . -maxdepth 3 -type f | sort
+
+          echo ""
+          echo "=== Verificando pin-config.js ==="
+
+          if [ -f "js/pin-config.js" ]; then
+            echo "OK: js/pin-config.js existe"
+          else
+            echo "ERROR: js/pin-config.js NO existe"
+            exit 1
+          fi
+
+      # ==========================================
+      # 4. Configurar GitHub Pages
+      # ==========================================
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      # ==========================================
+      # 5. Crear artifact para GitHub Pages
+      # ==========================================
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
 
+      # ==========================================
+      # 6. Publicar en GitHub Pages
+      # ==========================================
       - name: Deploy
         uses: actions/deploy-pages@v4
+```
